@@ -1,0 +1,100 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "from scipy import stats\n",
+    "from sklearn.linear_model import LinearRegression\n",
+    "from tqdm import tqdm\n",
+    "import mplfinance as mpf\n",
+    "import time\n",
+    "import matplotlib as mlt\n",
+    "from talib import abstract\n",
+    "from datetime import datetime\n",
+    "\n",
+    "def eveningstar(df):\n",
+    "    cond1 = (df['Trend7'].iloc[-4] > 0)\n",
+    "    cond2 = (df['Direction'].iloc[-3] > 0)\n",
+    "    cond3 = (df['Direction'].iloc[-1] < 0)\n",
+    "    cond4 = (df['Realbody_per'].iloc[-3] >= 65)\n",
+    "    cond5 = (df['Realbody_per'].iloc[-2] <= 35)\n",
+    "    cond6 = (df['Close'].iloc[-1] <= (df['Open'].iloc[-3] + df['Realbody'].iloc[-3] * (1/2)))\n",
+    "    cond7 = (df['Close'].iloc[-3] <= (df['Open'].iloc[-2] + df['Realbody'].iloc[-2] * (1/2)))\n",
+    "    cond8 = (df['Open'].iloc[-1] <= (df['Open'].iloc[-2] + df['Realbody'].iloc[-2] * (1/2)))\n",
+    "    if cond1 and cond2 and cond3 and cond4 and cond5 and cond6 and cond7 and cond8:\n",
+    "        return True\n",
+    "    else:\n",
+    "        return False\n",
+    "\n",
+    "def bullishengulfing(df):\n",
+    "    cond1 = (df['Trend8'].iloc[-3] < 0)\n",
+    "    cond2 = (df['Direction'].iloc[-2] < 0)\n",
+    "    cond3 = (df['Direction'].iloc[-1] > 0)\n",
+    "    cond4 = (df['Realbody_per'].iloc[-2] >= 65)\n",
+    "    cond5 = (df['Open'].iloc[-1] < df['Close'].iloc[-2])\n",
+    "    cond6 = (df['Close'].iloc[-1] > df['Open'].iloc[-2])\n",
+    "    if cond1 and cond2 and cond3 and cond4 and cond5 and cond6:\n",
+    "        return True\n",
+    "    else:\n",
+    "        return False    \n",
+    "\n",
+    "    \n",
+    "    \n",
+    "def signal(df):\n",
+    "    for idx in tqdm(df.index):\n",
+    "        start = idx-9\n",
+    "        end = idx\n",
+    "        if start >= 0:\n",
+    "            data = df.loc[start:end]\n",
+    "            if eveningstar(data):\n",
+    "                df.loc[end, 'Eveningstar'] = 1\n",
+    "            elif bullishengulfing(data):\n",
+    "                df.loc[end, 'Bullishengulfing'] = 1                \n",
+    "            else:\n",
+    "                df.loc[end, None] = 1\n",
+    "    return df\n",
+    "\n",
+    "def counts(df):\n",
+    "    Eveningstar_counts = df['Eveningstar'].values.sum()\n",
+    "    Bullishengulfing_counts = df['Bullishengulfing'].values.sum()\n",
+    "    \n",
+    "    print('The number of eveningstar:',Eveningstar_counts)\n",
+    "    print('The number of bullishengulfing:',Bullishengulfing_counts)  \n",
+    "    return df "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
